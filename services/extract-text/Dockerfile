@@ -1,5 +1,8 @@
 FROM node:8-slim
 
+RUN apt-get update \
+    && apt-get install pdftk poppler-utils ghostscript tesseract-ocr
+
 WORKDIR /server
 
 COPY . /server
