@@ -45,7 +45,10 @@ services:
       AWS_SECRET_ACCESS_KEY: random
       AWS_REGION: us-east-1
     ports:
-      - "5005:5005"
+      - "5006:5006"
     volumes: 
-      - ./services/extract-text/src:/server/src
+      - ./services/extract-image/src:/server/src
+
+  nats:
+    image: nats
   
