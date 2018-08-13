@@ -1,9 +1,8 @@
 import * as Hapi from 'hapi';
-import { S3, SQS } from 'aws-sdk';
 
-import { IServerConfiguration, IPlugin, IPluginOption, IAWS } from './interfaces';
+import { IServerConfiguration, IPlugin, IPluginOption } from './interfaces';
 
-export const init = async (serverConfig: IServerConfiguration, aws: IAWS): Promise<Hapi.Server> => {
+export const init = async (serverConfig: IServerConfiguration, pluginOpts: IPluginOption): Promise<Hapi.Server> => {
     try {
         const server = new Hapi.Server({
             port: serverConfig.port || process.env.PORT,
@@ -12,7 +11,15 @@ export const init = async (serverConfig: IServerConfiguration, aws: IAWS): Promi
             },
         });
     
-        const pluginOptions: IPluginOption = aws;
+        server.route({
+            method: 'GET',
+            path: '/',
+            options: {
+                handler: () => 'Extract Text Service',
+            },
+        });
+
+        const pluginOptions: IPluginOption = pluginOpts;
         let pluginPromises: Promise<any>[] = [];
     
         serverConfig.plugins.forEach((pluginName: string) => {

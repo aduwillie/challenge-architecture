@@ -6,17 +6,13 @@ export interface IServerConfiguration {
     plugins: Array<string>;
 };
 
-export interface IAWS {
-    S3: S3,
-    SQS: SQS,
-};
-
 export interface IDatabaseConfiguration {
     connectionString: string;
 };
 
 export interface IPluginOption {
-
+    S3: S3,
+    SQS: SQS,
 };
 
 export interface IPluginInfo {

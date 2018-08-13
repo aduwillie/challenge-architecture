@@ -32,7 +32,7 @@ const register = async (server: Hapi.Server): Promise<void> => {
                         name: 'SafeJson'
                     }, {
                         module: 'good-file',
-                        args: ['./test/fixtures/awesome_log']
+                        args: ['./logs/extract-text-logs']
                     }],
                     myHTTPReporter: [{
                         module: 'good-squeeze',
