@@ -1,5 +1,5 @@
 {
-  "name": "extract-text",
+  "name": "extract-image",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,7 +13,8 @@
     "moleculer": "^0.13.1",
     "moleculer-web": "^0.8.1",
     "nats": "^1.0.1",
-    "node-uuid": "^1.4.8"
+    "node-uuid": "^1.4.8",
+    "pdf-image": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^10.5.8",
