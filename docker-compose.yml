@@ -6,7 +6,7 @@ services:
     environment:
       - SERVICES=s3:5000,sqs:5001
       - DEFAULT_REGION=us-east-1
-      - HOSTNAME=localhost
+      - HOSTNAME=aws
     ports:
       - "5000:5000"
       - "5001:5001"
@@ -31,10 +31,21 @@ services:
       AWS_SECRET_ACCESS_KEY: random
       AWS_REGION: us-east-1
     ports:
-      - "5002:5002"
+      - "5005:5005"
     volumes: 
       - ./services/extract-text/src:/server/src
     
-
   ### Microservice #2
+  extract-image:
+    build: ./services/extract-text
+    command: ts-node-dev /server/src/index.ts
+    network_mode: "host"
+    environment:
+      AWS_ACCESS_KEY_ID: random
+      AWS_SECRET_ACCESS_KEY: random
+      AWS_REGION: us-east-1
+    ports:
+      - "5005:5005"
+    volumes: 
+      - ./services/extract-text/src:/server/src
   
