@@ -1,0 +1,76 @@
+version: '3'
+services:
+  ### AWS services emulator
+  aws:
+    image: localstack/localstack
+    environment:
+      - SERVICES=s3:5000,sqs:5001
+      - DEFAULT_REGION=us-east-1
+      - HOSTNAME=aws
+      - HOSTNAME_EXTERNAL=aws
+      - PORT_WEB_UI=5002
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+      - "5002:5002"
+
+  ### Document generator service
+  stream:
+    build: ./stream
+    command: ts-node-dev src/index.ts
+    env_file: docker-compose.env
+    environment:
+      AWS_ACCESS_KEY_ID: random
+      AWS_SECRET_ACCESS_KEY: random
+      AWS_REGION: us-east-1
+    links:
+      - nats
+    depends_on: 
+      - nats
+      - aws
+    ports: 
+      - "5003:5003"
+    volumes:
+      - ./stream/src:/server/src
+
+  ### Microservice #1
+  extract-text:
+    build: ./services/extract-text
+    command: ts-node-dev /server/src/index.ts
+    env_file: docker-compose.env
+    environment:
+      AWS_ACCESS_KEY_ID: random
+      AWS_SECRET_ACCESS_KEY: random
+      AWS_REGION: us-east-1
+    ports:
+      - "5005:5005"
+    links:
+      - nats
+    depends_on:
+      - nats
+      - aws
+    volumes: 
+      - ./services/extract-text/src:/server/src
+    
+  ### Microservice #2
+  extract-image:
+    build: ./services/extract-image
+    command: ts-node-dev /server/src/index.ts
+    env_file: docker-compose.env
+    environment:
+      AWS_ACCESS_KEY_ID: random
+      AWS_SECRET_ACCESS_KEY: random
+      AWS_REGION: us-east-1
+    links:
+      - nats
+    depends_on:
+      - nats
+      - aws
+    ports:
+      - "5006:5006"
+    volumes: 
+      - ./services/extract-image/src:/server/src
+
+  nats:
+    image: nats
+  
