@@ -41,8 +41,8 @@ services:
     depends_on: 
       - nats
       - aws
-    ports: 
-      - "5003:5003"
+    expose: 
+      - 5003
     volumes:
       - ./stream/src:/server/src
     networks:

@@ -13,7 +13,7 @@ const broker: ServiceBroker = new ServiceBroker({
     transporter: "nats://nats:4222",
 });
 
-const service: ServiceSchema = {
+export const Service: ServiceSchema = {
     name: 'extract-image',
     version: 1,
     mixins: [ApiGateway],
@@ -63,7 +63,7 @@ const service: ServiceSchema = {
     }
 };
 
-broker.createService(service);
+broker.createService(Service);
 
 broker.start()
     .then((() => console.log('Broker started!!')))
