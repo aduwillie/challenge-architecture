@@ -27,8 +27,7 @@ const createDocument = async (QueueUrl: string, Bucket: string) => {
   const Key = `${uid}.pdf`
   await uploadFile(filePath, Bucket, Key)
   const body = JSON.stringify({ uid, Bucket, Key });
-  const result = await (sqs.sendMessage({ QueueUrl, MessageBody: body }).promise())
-  console.log(result);
+  await (sqs.sendMessage({ QueueUrl, MessageBody: body }).promise())
 }
 
 async function initialize() {

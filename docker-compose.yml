@@ -4,12 +4,15 @@ services:
   aws:
     image: localstack/localstack
     environment:
-      - SERVICES=s3:5000
+      - SERVICES=s3:5000,sqs:5001
       - DEFAULT_REGION=us-east-1
       - HOSTNAME=aws
+      - HOSTNAME_EXTERNAL=aws
+      - PORT_WEB_UI=5002
     ports:
       - "5000:5000"
-      - "5001:4576"
+      - "5001:5001"
+      - "5002:5002"
 
   ### Document generator service
   stream:
