@@ -1,10 +1,11 @@
 import * as Path from 'path';
-import { S3, SQS } from 'aws-sdk';
+import { S3 } from 'aws-sdk';
 import { writeToFile } from './file-system';
 
 const s3 = new S3({
     endpoint: 'http://aws:5000',
-    s3ForcePathStyle: true
+    s3ForcePathStyle: true,
+    region: process.env.AWS_REGION || 'us-east-1',
 });
 
 export const getLocalCopyFromS3 = async (bucket: string, key: string): Promise<string> => {

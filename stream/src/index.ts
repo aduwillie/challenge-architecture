@@ -1,11 +1,13 @@
-import { S3, SQS } from 'aws-sdk'
+import * as AWS from 'aws-sdk'
 import { v4 } from 'uuid'
 import { createReadStream } from 'fs'
 import { sample, random } from 'lodash'
 import { join } from 'path'
 
-const s3 = new S3({ endpoint: 'http://localhost:5000', s3ForcePathStyle: true })
-const sqs = new SQS({ endpoint: 'http://localhost:5001' })
+AWS.config.update({ region: process.env.AWS_REGION || 'us-east-1' });
+
+const s3 = new AWS.S3({ endpoint: 'http://aws:5000', s3ForcePathStyle: true })
+const sqs = new AWS.SQS({ endpoint: 'http://aws:5001' })
 
 const uploadFile = async (filePath: string, Bucket: string, Key: string = filePath) => {
   return s3
@@ -24,7 +26,9 @@ const createDocument = async (QueueUrl: string, Bucket: string) => {
   const uid = v4()
   const Key = `${uid}.pdf`
   await uploadFile(filePath, Bucket, Key)
-  await sqs.sendMessage({ QueueUrl, MessageBody: JSON.stringify({ uid, Bucket, Key }) }).promise()
+  const body = JSON.stringify({ uid, Bucket, Key });
+  const result = await (sqs.sendMessage({ QueueUrl, MessageBody: body }).promise())
+  console.log(result);
 }
 
 async function initialize() {
@@ -49,3 +53,11 @@ async function generate(options) {
 }
 
 initialize().then(generate)
+
+process.on('unhandledRejection', (err) => {
+  console.log(err);
+});
+
+process.on('uncaughtException', (err) => {
+  console.log(err);
+});
