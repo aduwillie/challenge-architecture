@@ -1,10 +1,11 @@
-# Caya Backend/Architecture Challenge
+# Backend/Architecture Challenge
 
+## Problem statement
 Implement a "document processing engine" in the form of microservices for the purpose of processing any type of PDF file that our customers may bring to our platform.
 
 Specifically, we want to implement two microservices that extract the text and create preview images from an incoming document that needs to be processed.
 
-The main goals for this engine are:
+### Goals
 
 - able to scale to process thousands of documents in a short period of time
 - simple to extend the pipeline with more steps(ex. today we extract the text and preview images, in the future we may want to extend it such that we train a machine learning model and then run predictions against the model)
@@ -21,9 +22,10 @@ Optional:
 - write a few tests(unit/integration) for the implementation
 - integrate a monitoring service (either run it via docker or use a cloud service of your choice) and create a few alerts that you deem to be important
 
-### Requirements
+### Dependencies
 
-- You need to have Docker, node.js and npm installed on your machine
+- Docker
+- node.js (and npm)
 - Some knowledge of AWS S3 and AWS SQS
 
 #### Implementation notes/ideas
@@ -44,24 +46,36 @@ interface MessageBody {
 }
 ```
 
-### Judging/evaluation notes
+### Services Created
+- stream (Document generator service)
+- extract-text (Microservice #1)
+- extract-image (Microservice #2)
+- nats (Message Broker)
+- prometheus (Metrics database)
+- alert Manager (Send Notifications)
+- nodeexporter (OS Metrics)
+- cadvisor (Container Metrics)
+- grafana (Visualize Metrics)
+- pushgateway (Push acceptor for batch jobs)
+- caddy (Reverse proxy and basic auth for prometheus and alertmanager)
 
-We will be looking at the following when evaluating your submission:
+## Getting Started
 
-- Code style
-- Implementation architecture
-- Familiarity with the frameworks/libraries/language of your choice
+The project can be started using the command `docker-compose up -d`. If there's a need to rebuild the containers, use `docker-compose up -d --build`.
 
-Feel free to use _any_ other library/framework/tool that you find to be useful. Though, the more code you write yourself the better.
+### Notes
 
-### Submission
+To view the Grafana Dashboard, use http://<your-host>:3000
+To access Prometheus Dashboard, use http://<your-host>:9090
 
-- Clone the repo
-- Implement your solution
-- Share your code as a Github/Gitlab/etc repository or a ZIP file
-- (optional) Deploy the final solution to a cloud service of your choice
-- (optional) Provide detailed instructions on how to start the project locally (if different than running `docker-compose up` to bootstrap all services)
+Caddy Reverse Proxy has been configured to route traffic to:
+- `:5005` --> Extract Text Service
+- `:5006` --> Extract Image Service
 
-### Questions?
+For both `extract-text` and `extract-image` service, you can access all routes through `/api` (prefix) endpoint. Also the following routes can help you see stats about each of the the service:
 
-Feel free to reach out to one of us, we are more than happy to assist you with your submission and clarifying any questions you might have related to the task.
+```
+  /api/~node/health  # Health info of node
+  /api/~node/list  # List all actions
+```
+
