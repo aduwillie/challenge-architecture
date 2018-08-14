@@ -10,7 +10,7 @@ const broker: ServiceBroker = new ServiceBroker({
     logger: true,
     logLevel: 'info',
     logFormatter: 'default',
-    transporter: "NATS",
+    transporter: "nats://nats:4222",
 });
 
 const service: ServiceSchema = {

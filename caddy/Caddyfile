@@ -1,3 +1,21 @@
+:5005 {
+    proxy / extract-text:5005 {
+            transparent
+        }
+
+    errors stderr
+    tls off
+}
+
+:5006 {
+    proxy / extract-image:5006 {
+            transparent
+        }
+        
+    errors stderr
+    tls off
+}
+
 :9090 {
     basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
     proxy / prometheus:9090 {

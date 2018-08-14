@@ -59,8 +59,8 @@ services:
       AWS_ACCESS_KEY_ID: random
       AWS_SECRET_ACCESS_KEY: random
       AWS_REGION: us-east-1
-    ports:
-      - "5005:5005"
+    expose:
+      - 5005
     links:
       - nats
     depends_on:
@@ -87,8 +87,8 @@ services:
     depends_on:
       - nats
       - aws
-    ports:
-      - "5006:5006"
+    expose:
+      - 5006
     volumes: 
       - ./services/extract-image/src:/server/src
     networks:
@@ -226,6 +226,8 @@ services:
       - "9090:9090"
       - "9093:9093"
       - "9091:9091"
+      - "5005:5005"
+      - "5006:5006"
     volumes:
       - ./caddy/:/etc/caddy/
     environment:
