@@ -11,7 +11,7 @@ const s3 = new S3({
 export const getLocalCopyFromS3 = async (bucket: string, key: string): Promise<string> => {
     try {
         const timeStamp: number = +new Date();
-        await (s3.getBucketAcl({ Bucket: bucket }).promise());
+        await s3.getBucketAcl({ Bucket: bucket }).promise();
         const data = await (s3.getObject({ Bucket: bucket, Key: key }).promise());
         const localFilePath = Path.resolve(__dirname, 'temp-files', timeStamp.toString(), key);
         await  writeToFile(localFilePath, data).then;

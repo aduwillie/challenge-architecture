@@ -1,6 +1,5 @@
 import * as Fs from 'fs';
 import { PDFImage } from 'pdf-image';
-import { resolve } from 'dns';
 
 export const convertPage = async (pathToPdf: string, pageNumber: number): Promise<string> => {
     try {

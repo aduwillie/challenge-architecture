@@ -7,10 +7,12 @@ AWS.config.update({ region: process.env.AWS_REGION || 'us-east-1' });
 const sqs = new AWS.SQS({ endpoint: 'http://aws:5001' });
 
 const broker: ServiceBroker = new ServiceBroker({
+    nodeID: 'worker',
     logger: true,
     logLevel: 'info',
     logFormatter: 'default',
     transporter: "nats://nats:4222",
+    metrics: true,
 });
 
 interface MessageBody {
@@ -19,37 +21,47 @@ interface MessageBody {
     Key: string;
 };
 
-broker.start()
-    .then(() => console.log('Broker started!'))
-    .then(() => {
-        const QueueName = 'file-stream'
-        return sqs.createQueue({ QueueName }).promise().then(d => d.QueueUrl);
-    })
-    .then(queueUrl => {
-        return SQSConsumer.create({
-            queueUrl,
-            handleMessage: (message, done) => {
-                const msgObj: MessageBody = JSON.parse(message.Body);
-                console.log(`Processing ${msgObj}`);
-                return Promise.all([
-                    broker.call('v1.extract-text.extract', { bucket: msgObj.Bucket, key: msgObj.Key }),
-                    broker.call('v1.extract-image.extract', { bucket: msgObj.Bucket, key: msgObj.Key }), 
-                ]).then(d => {
-                    done();
-                });
-            },
+const QueueName = 'file-stream';
+let QueueUrl;
+
+const wait = time => new Promise(resolve => setTimeout(resolve, time));
+
+const queueNextPoll = async () => {
+    await wait(5000);
+    await getNextMessage();
+};
+
+const getNextMessage = async () => {
+    try {
+        if (!QueueUrl) {
+            QueueUrl = await sqs.getQueueUrl({ QueueName }).promise();
+        }
+        const receivedMessage = await sqs.receiveMessage({ QueueUrl, VisibilityTimeout: 5000 }).promise();
+        const rawMessage = receivedMessage.Messages[0];
+        broker.logger.info(`[${rawMessage.MessageId}] Processing: ${rawMessage.Body}`);
+
+        const parsedMessage = JSON.parse(rawMessage.Body);
+        await broker.call('v1.extract-text.extract', { bucket: parsedMessage.Bucket, key: parsedMessage.Key }, {
+            timeout: 500,
+            retries: 3,
+            fallbackResponse: (ctx, err) => `[Extract Text] issues: ${err}`, 
         });
-    })
-    .then(app => {
-        app.on('err', (err) => console.log(err));
+        await broker.call('v1.extract-image.extract', { bucket: parsedMessage.Bucket, key: parsedMessage.Key }, {
+            timeout: 500,
+            retries: 3,
+            fallbackResponse: (ctx, err) => `[Extract Text] issues: ${err}`, 
+        });
 
-        return app.start();
-    });
+        await wait(5000);
+        const delMessageResult = await sqs.deleteMessage({ QueueUrl, ReceiptHandle: rawMessage.ReceiptHandle }).promise();
+        
+        await queueNextPoll();
+    } catch (error) {
+        console.log(error);
+        process.exit(1);
+    }
+};
 
-process.on('unhandledRejection', (err) => {
-    console.log(err);
-});
-
-process.on('uncaughtException', (err) => {
-    console.log(err);
-});
+broker.start()
+    .then(() => console.log('Broker Started!'))
+    .then(queueNextPoll);

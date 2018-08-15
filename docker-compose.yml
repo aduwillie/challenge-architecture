@@ -1,4 +1,4 @@
-version: '2.1'
+version: 3
 
 networks:
   monitor-net:
@@ -26,6 +26,10 @@ services:
       - monitor-net
     labels:
       org.label-schema.group: "monitoring"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
 
   ### Document generator service
   stream:
@@ -49,6 +53,10 @@ services:
       - monitor-net
     labels:
       org.label-schema.group: "monitoring"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
 
   ### Microservice #1
   extract-text:
@@ -75,6 +83,10 @@ services:
       - monitor-net
     labels:
       org.label-schema.group: "monitoring"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
     
   ### Microservice #2
   extract-image:
@@ -101,6 +113,10 @@ services:
       - monitor-net
     labels:
       org.label-schema.group: "monitoring"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
 
   ### Microservice #3
   worker:
@@ -116,6 +132,7 @@ services:
     depends_on:
       - nats
       - aws
+      - stream
     expose:
       - 5007
     volumes: 
@@ -127,6 +144,10 @@ services:
       - monitor-net
     labels:
       org.label-schema.group: "monitoring"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
 
   ### NATS Broker
   nats:

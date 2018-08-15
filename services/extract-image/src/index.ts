@@ -29,14 +29,6 @@ export const GetService: (options: IServiceOptions) => ServiceSchema = ({ extrac
     mixins: [ApiGateway],
     settings: {
         port: process.env.PORT || 5006,
-        // collectDefaultMetrics: true,
-        // timeout: 5 * 1000,
-        // routes: [{
-		// 	path: "/api",
-		// 	whitelist: [
-		// 		"**"
-		// 	],
-		// }],
     },
     actions: {
         ping: () => 'pong',
