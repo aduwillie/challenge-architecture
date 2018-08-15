@@ -50,6 +50,7 @@ interface MessageBody {
 - stream (Document generator service)
 - extract-text (Microservice #1)
 - extract-image (Microservice #2)
+- worker (Microservice #3)
 - nats (Message Broker)
 - prometheus (Metrics database)
 - alert Manager (Send Notifications)
@@ -72,10 +73,19 @@ Caddy Reverse Proxy has been configured to route traffic to:
 - `:5005` --> Extract Text Service
 - `:5006` --> Extract Image Service
 
-For both `extract-text` and `extract-image` service, you can access all routes through `/api` (prefix) endpoint. Also the following routes can help you see stats about each of the the service:
+
+For both `extract-text` and `extract-image` service, you can access all routes through `/v1` (prefix) endpoint. Also the following routes can help you see stats about each of the the service:
 
 ```
-  /api/~node/health  # Health info of node
-  /api/~node/list  # List all actions
+  /v1/~node/health  # Health info of node
+  /v1/~node/list  # List all actions
 ```
 
+### Testing
+
+As of now, tests can be run against only 2 types of services i.e `extract-text` and `extract-image`.
+
+```
+docker-compose exec extract-image npm run test # Tests for extract-image service
+docker-compose exec extract-text npm run test # Tests for extract-text service
+```

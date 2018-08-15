@@ -10,7 +10,7 @@ COPY . /server
 RUN npm install -g typescript ts-node-dev
 RUN npm install --unsafe-perm
 
-ENV PORT=5006
-EXPOSE 5006
+ENV PORT=5007
+EXPOSE 5007
 
 CMD [ "npm", "start" ]
