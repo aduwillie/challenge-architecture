@@ -102,6 +102,32 @@ services:
     labels:
       org.label-schema.group: "monitoring"
 
+  ### Microservice #3
+  worker:
+    build: ./services/worker
+    command: ts-node-dev /server/src/index.ts
+    env_file: docker-compose.env
+    environment:
+      AWS_ACCESS_KEY_ID: random
+      AWS_SECRET_ACCESS_KEY: random
+      AWS_REGION: us-east-1
+    links:
+      - nats
+    depends_on:
+      - nats
+      - aws
+    expose:
+      - 5007
+    volumes: 
+      - ./services/worker/src:/server/src
+      - ./services/worker/package.json:/server/package.json
+      # - ./services/extract-image/tests:/server/tests
+      # - ./services/extract-image/test-deps:/server/test-deps
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+
   ### NATS Broker
   nats:
     image: nats

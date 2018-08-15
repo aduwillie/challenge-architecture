@@ -16,11 +16,11 @@ export const convertPage = async (pathToPdf: string, pageNumber: number): Promis
     }
 };
 
-export const extractImage = async (pathToPdf: string, pageLength: number): Promise<string[]> => {
+export const extractImage = async (pathToPdf: string, pageLength: number): Promise<string> => {
     try {
         if (pageLength === 1) {
             const page = await convertPage(pathToPdf, 0)
-            return [ page ];
+            return page;
         }
 
         const pImage = new PDFImage(pathToPdf);
@@ -43,9 +43,9 @@ export const extractImage = async (pathToPdf: string, pageLength: number): Promi
     }
 };
 
-export const combineImages = async (images, pdfImage: PDFImage) => {
+export const combineImages = async (images: string[], pdfImage: PDFImage) => {
     try {
-        const combinedImagePath = await pdfImage.combine(images);
+        const combinedImagePath: string = await pdfImage.combine(images);
         if (Fs.existsSync(combinedImagePath)) {
             return combinedImagePath;
         } else {

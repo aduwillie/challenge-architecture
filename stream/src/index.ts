@@ -9,6 +9,12 @@ AWS.config.update({ region: process.env.AWS_REGION || 'us-east-1' });
 const s3 = new AWS.S3({ endpoint: 'http://aws:5000', s3ForcePathStyle: true })
 const sqs = new AWS.SQS({ endpoint: 'http://aws:5001' })
 
+interface MessageBody {
+  uid: string;
+  Bucket: string;
+  Key: string;
+};
+
 const uploadFile = async (filePath: string, Bucket: string, Key: string = filePath) => {
   return s3
     .putObject({
@@ -26,8 +32,8 @@ const createDocument = async (QueueUrl: string, Bucket: string) => {
   const uid = v4()
   const Key = `${uid}.pdf`
   await uploadFile(filePath, Bucket, Key)
-  const body = JSON.stringify({ uid, Bucket, Key });
-  await (sqs.sendMessage({ QueueUrl, MessageBody: body }).promise())
+  const body: MessageBody = { uid, Bucket, Key };
+  await (sqs.sendMessage({ QueueUrl, MessageBody: JSON.stringify(body) }).promise())
 }
 
 async function initialize() {

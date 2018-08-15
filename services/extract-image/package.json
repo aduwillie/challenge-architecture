@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "test": "ts-jest --coverage"
+    "test": "./node_modules/.bin/jest --coverage --detectOpenHandles"
   },
   "keywords": [],
   "author": "",

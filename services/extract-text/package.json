@@ -4,13 +4,31 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "test": "./node_modules/.bin/jest --coverage --detectOpenHandles"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
+  "jest": {
+    "setupFiles": [
+      "<rootDir>/test-deps/test-shim.js"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "<rootDir>/test-deps/test-preprocessor.js"
+    },
+    "testMatch": [
+      "**/tests/**/*.(ts|tsx|js)"
+    ]
+  },
   "dependencies": {
     "aws-sdk": "^2.291.0",
+    "jest": "^23.5.0",
     "moleculer": "^0.13.1",
     "moleculer-prometheus": "^0.2.0",
     "moleculer-web": "^0.8.1",
@@ -19,6 +37,7 @@
     "pdf-to-text": "0.0.7"
   },
   "devDependencies": {
+    "@types/jest": "^23.3.1",
     "@types/node": "^10.5.8",
     "ts-node": "^7.0.1",
     "ts-node-dev": "^1.0.0-pre.26",

@@ -6,6 +6,13 @@ import { extractText } from './extract-text';
 import { getLocalCopyFromS3, uploadToS3 } from './s3';
 import { deleteFile } from './file-system';
 
+export interface IServiceOptions {
+    extractText: (pathToPdf: string) => Promise<string>;
+    getLocalCopyFromS3: (bucket:string, key: string) => Promise<string>;
+    uploadToS3: (bucket: string, key: string, body: string | Buffer | ReadableStream) => Promise<any>;
+    deleteFile: (filename: string | string[]) => Promise<any>;
+};
+
 const broker: ServiceBroker = new ServiceBroker({
     nodeID: 'extract-text',
     logger: true,
@@ -15,14 +22,14 @@ const broker: ServiceBroker = new ServiceBroker({
     metrics: true,
 });
 
-const service: ServiceSchema = {
+export const GetService: (options: IServiceOptions) => ServiceSchema = ({ extractText, getLocalCopyFromS3, uploadToS3, deleteFile }) =>  ({
     name: 'extract-text',
     version: 1,
-    mixins: [ApiGateway, PromService],
+    mixins: [ApiGateway],
     settings: {
         port: process.env.PORT || 5005,
-        collectDefaultMetrics: true,
-        timeout: 5 * 1000,
+        // collectDefaultMetrics: true,
+        // timeout: 5 * 1000,
         // routes: [{
 		// 	path: "/api",
 		// 	whitelist: [
@@ -40,7 +47,7 @@ const service: ServiceSchema = {
             handler: async (ctx) => {
                 const { bucket, key, filename } = ctx.params;
                 const localAbsolutePath = await getLocalCopyFromS3(bucket, key);
-                const extractedText = await this.extractText(localAbsolutePath);
+                const extractedText = await extractText(localAbsolutePath);
                 const newKey = `texts/${key.replace('.pdf', '.txt')}`;
                 const location: string = await uploadToS3(bucket, newKey, Buffer.from(extractedText))
                 broker.emit('extract.text', { bucket, key, location, pathToClean: [ localAbsolutePath ] });
@@ -49,23 +56,26 @@ const service: ServiceSchema = {
         },
     },
     methods: {
-        extractText,
         getServiceName: () => 'Extract Text',
-        deleteFile,
     },
     events: {
         'extract.text': async (payload: any) => {
             this.logger.info('Text extracted -> ', payload);
-            await this.deleteFile(payload.pathToClean);
+            await deleteFile(payload.pathToClean);
             this.logger.info('Path cleaned -> ', payload.pathToClean);
         },
         '$node.connected': ({ node }) => {
             this.logger.info(`Node ${node.id} is connected!`);
         }
     }
-};
+});
 
-broker.createService(service);
+broker.createService(GetService({
+    extractText,
+    getLocalCopyFromS3,
+    uploadToS3,
+    deleteFile,
+}));
 
 broker.start()
     .then((() => console.log('Broker started!!')))
