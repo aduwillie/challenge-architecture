@@ -1,3 +1,4 @@
+import * as PromService from 'moleculer-prometheus';
 import { ServiceBroker, ServiceSchema } from 'moleculer';
 import * as ApiGateway from 'moleculer-web';
 
@@ -11,6 +12,7 @@ const broker: ServiceBroker = new ServiceBroker({
     logLevel: 'info',
     logFormatter: 'default',
     transporter: "nats://nats:4222",
+    metrics: true,
 });
 
 export const Service: ServiceSchema = {
@@ -19,12 +21,14 @@ export const Service: ServiceSchema = {
     mixins: [ApiGateway],
     settings: {
         port: process.env.PORT || 5006,
-        routes: [{
-			path: "/api",
-			whitelist: [
-				"**"
-			],
-		}],
+        // collectDefaultMetrics: true,
+        // timeout: 5 * 1000,
+        // routes: [{
+		// 	path: "/api",
+		// 	whitelist: [
+		// 		"**"
+		// 	],
+		// }],
     },
     actions: {
         ping: () => 'pong',
@@ -36,10 +40,10 @@ export const Service: ServiceSchema = {
             handler: async (ctx) => {
                 const { bucket, key, filename } = ctx.params;
                 const localAbsolutePath = await this.getLocalCopyFromS3(bucket, key);
-                const combinedImagePath = await this.extractImage(localAbsolutePath, 10);
-                const imageBuffer = await readFile(combinedImagePath);
+                const combinedImagePath = await this.extractImage('localAbsolutePath', 10);
+                const imageBuffer = await this.readFile(combinedImagePath);
                 const newKey = `images/${key.replace('.pdf', '.png')}`;
-                const location: string = await uploadToS3(bucket, newKey, imageBuffer);
+                const location: string = await this.uploadToS3(bucket, newKey, imageBuffer);
                 broker.emit('extract.image', { bucket, key, location, pathToClean: [ localAbsolutePath, combinedImagePath ] });
                 return { bucket, key, location };
             },
@@ -47,8 +51,12 @@ export const Service: ServiceSchema = {
     },
     methods: {
         getServiceName: () => 'Extract Text',
-        getLocalCopyFromS3,
+        getLocalCopyFromS3: async(bucket, key) => {
+            await getLocalCopyFromS3(bucket, key);
+        },
         extractImage,
+        uploadToS3,
+        readFile,
         deleteFile,
     },
     events: {

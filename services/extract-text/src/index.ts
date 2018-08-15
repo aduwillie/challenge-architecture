@@ -1,3 +1,4 @@
+import * as PromService from 'moleculer-prometheus';
 import { ServiceBroker, ServiceSchema } from 'moleculer';
 import * as ApiGateway from 'moleculer-web';
 
@@ -11,20 +12,23 @@ const broker: ServiceBroker = new ServiceBroker({
     logLevel: 'info',
     logFormatter: 'default',
     transporter: "nats://nats:4222",
+    metrics: true,
 });
 
 const service: ServiceSchema = {
     name: 'extract-text',
     version: 1,
-    mixins: [ApiGateway],
+    mixins: [ApiGateway, PromService],
     settings: {
         port: process.env.PORT || 5005,
-        routes: [{
-			path: "/api",
-			whitelist: [
-				"**"
-			],
-		}],
+        collectDefaultMetrics: true,
+        timeout: 5 * 1000,
+        // routes: [{
+		// 	path: "/api",
+		// 	whitelist: [
+		// 		"**"
+		// 	],
+		// }],
     },
     actions: {
         ping: () => 'pong',

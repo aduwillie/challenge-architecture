@@ -68,6 +68,9 @@ services:
       - aws
     volumes: 
       - ./services/extract-text/src:/server/src
+      - ./services/extract-text/package.json:/server/package.json
+      - ./services/extract-text/tests:/server/tests
+      - ./services/extract-text/test-deps:/server/test-deps
     networks:
       - monitor-net
     labels:
@@ -91,6 +94,9 @@ services:
       - 5006
     volumes: 
       - ./services/extract-image/src:/server/src
+      - ./services/extract-image/package.json:/server/package.json
+      - ./services/extract-image/tests:/server/tests
+      - ./services/extract-image/test-deps:/server/test-deps
     networks:
       - monitor-net
     labels:
