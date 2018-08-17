@@ -11,11 +11,15 @@ const s3 = new S3({
 export const getLocalCopyFromS3 = async (bucket: string, key: string): Promise<string> => {
     try {
         const timeStamp: number = +new Date();
-        await (s3.getBucketAcl({ Bucket: bucket }).promise());
-        const data = await (s3.getObject({ Bucket: bucket, Key: key }).promise());
-        const localFilePath = Path.resolve(__dirname, 'temp-files', timeStamp.toString(), key);
-        await  writeToFile(localFilePath, data).then;
-        return localFilePath;
+        await s3.getBucketAcl({ Bucket: bucket }).promise();
+        const data = await s3.getObject({ Bucket: bucket, Key: key }).promise();
+        if (data) {
+            const localFilePath = Path.resolve(__dirname, 'temp-files', timeStamp.toString(), key);
+            await  writeToFile(localFilePath, data.Body);
+            return localFilePath;
+        } else {
+            throw new Error('No Object found in S3!');
+        }
     } catch (error) {
         throw new Error(error);
     }
@@ -23,9 +27,9 @@ export const getLocalCopyFromS3 = async (bucket: string, key: string): Promise<s
 
 export const uploadToS3 = async (bucket: string, key: string, body: Buffer | string | ReadableStream): Promise<any> => {
     try {
-        await (s3.getBucketAcl({ Bucket: bucket }).promise());
+        await s3.getBucketAcl({ Bucket: bucket }).promise();
         const params = { Bucket: bucket, Key: key, Body: body };
-        var data = await (s3.upload(params,).promise());
+        var data = await s3.upload(params,).promise();
         return data.Location;
     } catch (error) {
         throw new Error(error);

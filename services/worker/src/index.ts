@@ -1,5 +1,4 @@
 import * as AWS from 'aws-sdk';
-import * as SQSConsumer from 'sqs-consumer';
 import { ServiceBroker } from 'moleculer';
 
 AWS.config.update({ region: process.env.AWS_REGION || 'us-east-1' });
@@ -34,7 +33,8 @@ const queueNextPoll = async () => {
 const getNextMessage = async () => {
     try {
         if (!QueueUrl) {
-            QueueUrl = await sqs.getQueueUrl({ QueueName }).promise();
+            const getQueueResponse = await sqs.getQueueUrl({ QueueName }).promise();
+            QueueUrl = getQueueResponse.QueueUrl;
         }
         const receivedMessage = await sqs.receiveMessage({ QueueUrl, VisibilityTimeout: 5000 }).promise();
         const rawMessage = receivedMessage.Messages[0];
@@ -44,7 +44,9 @@ const getNextMessage = async () => {
         await broker.call('v1.extract-text.extract', { bucket: parsedMessage.Bucket, key: parsedMessage.Key }, {
             timeout: 500,
             retries: 3,
-            fallbackResponse: (ctx, err) => `[Extract Text] issues: ${err}`, 
+            fallbackResponse: (ctx, err) => {
+                broker.logger.error(`[Extract Text] issues: ${err}`);
+            }, 
         });
         await broker.call('v1.extract-image.extract', { bucket: parsedMessage.Bucket, key: parsedMessage.Key }, {
             timeout: 500,

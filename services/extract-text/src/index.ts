@@ -13,6 +13,8 @@ export interface IServiceOptions {
     deleteFile: (filename: string | string[]) => Promise<any>;
 };
 
+const BUCKET_NAME = 'texts';
+
 const broker: ServiceBroker = new ServiceBroker({
     nodeID: 'extract-text',
     logger: true,
@@ -28,14 +30,6 @@ export const GetService: (options: IServiceOptions) => ServiceSchema = ({ extrac
     mixins: [ApiGateway],
     settings: {
         port: process.env.PORT || 5005,
-        // collectDefaultMetrics: true,
-        // timeout: 5 * 1000,
-        // routes: [{
-		// 	path: "/api",
-		// 	whitelist: [
-		// 		"**"
-		// 	],
-		// }],
     },
     actions: {
         ping: () => 'pong',
@@ -45,13 +39,14 @@ export const GetService: (options: IServiceOptions) => ServiceSchema = ({ extrac
                 key: 'string',
             },
             handler: async (ctx) => {
-                const { bucket, key, filename } = ctx.params;
+                const { bucket, key } = ctx.params;
                 const localAbsolutePath = await getLocalCopyFromS3(bucket, key);
                 const extractedText = await extractText(localAbsolutePath);
-                const newKey = `texts/${key.replace('.pdf', '.txt')}`;
-                const location: string = await uploadToS3(bucket, newKey, Buffer.from(extractedText))
-                broker.emit('extract.text', { bucket, key, location, pathToClean: [ localAbsolutePath ] });
-                return { bucket, key, location };
+                const newKey: string = key.replace('.pdf', '.txt');
+                const location: string = await uploadToS3(bucket, newKey, Buffer.from(extractedText));
+                const returnObj = { bucket: BUCKET_NAME, key: newKey, location };
+                broker.emit('extract.text', Object.assign(returnObj, { pathToClean: [ localAbsolutePath ] }));
+                return returnObj;
             },
         },
     },

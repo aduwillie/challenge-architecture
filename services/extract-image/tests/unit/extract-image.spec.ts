@@ -7,7 +7,7 @@ describe('Extract Image Service', () => {
 	let broker = new ServiceBroker();
 
 	const bucket = 'test-bucket';
-	const key = 'test-key';
+	const key = 'test-key.pdf';
 	const s3Path = 's3-path';
 
 	const testServiceOptions: IServiceOptions = {
@@ -39,15 +39,15 @@ describe('Extract Image Service', () => {
 		expect(broker.call('v1.test-extract-image.ping')).resolves.toEqual('pong');
 	});
 
-	it('fail scenarios', async () => {
+	it('extract-image fail scenarios', async () => {
 		await expect(broker.call('v1.test-extract-image.extract', { bucket })).rejects.toBeInstanceOf(ValidationError);
 		await expect(broker.call('v1.test-extract-image.extract', { key })).rejects.toBeInstanceOf(ValidationError);
 	});
 
-	it('pass scenarios', async () => {
+	it('extract-image pass scenarios', async () => {
 		const result = await broker.call('v1.test-extract-image.extract', { bucket, key });
-		expect(result.bucket).toEqual(bucket);
-		expect(result.key).toEqual(key);
+		expect(result.bucket).toEqual('images');
+		expect(result.key).toEqual(key.replace('.pdf', '.txt'));
 		expect(result.location).toEqual(s3Path);
 	});
 });

@@ -13,16 +13,6 @@ rule_files:
 
 # A scrape configuration containing exactly one endpoint to scrape.
 scrape_configs:
-  - job_name: 'extract-text'
-    scrape_interval: 5s
-    static_configs:
-      - targets: ['extract-text:5005']
-  
-  - job_name: 'extract-image'
-    scrape_interval: 5s
-    static_configs:
-      - targets: ['extract-text:5006']
-
   - job_name: 'nodeexporter'
     scrape_interval: 5s
     static_configs:

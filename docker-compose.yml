@@ -1,4 +1,4 @@
-version: 3
+version: '3'
 
 networks:
   monitor-net:
@@ -42,9 +42,6 @@ services:
       AWS_REGION: us-east-1
     links:
       - nats
-    depends_on: 
-      - nats
-      - aws
     expose: 
       - 5003
     volumes:
@@ -71,9 +68,6 @@ services:
       - 5005
     links:
       - nats
-    depends_on:
-      - nats
-      - aws
     volumes: 
       - ./services/extract-text/src:/server/src
       - ./services/extract-text/package.json:/server/package.json
@@ -99,9 +93,6 @@ services:
       AWS_REGION: us-east-1
     links:
       - nats
-    depends_on:
-      - nats
-      - aws
     expose:
       - 5006
     volumes: 
@@ -130,9 +121,8 @@ services:
     links:
       - nats
     depends_on:
-      - nats
-      - aws
-      - stream
+      - extract-text
+      - extract-image
     expose:
       - 5007
     volumes: 

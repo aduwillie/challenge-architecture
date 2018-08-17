@@ -7,7 +7,7 @@ describe('Extract Text Service', () => {
 	let broker = new ServiceBroker();
 
 	const bucket = 'test-bucket';
-	const key = 'test-key';
+	const key = 'test-key.pdf';
 	const s3Path = 's3-path';
 
 	const testServiceOptions: IServiceOptions = {
@@ -45,8 +45,8 @@ describe('Extract Text Service', () => {
 
 	it('pass scenarios', async () => {
 		const result = await broker.call('v1.test-extract-text.extract', { bucket, key });
-		expect(result.bucket).toEqual(bucket);
-		expect(result.key).toEqual(key);
+		expect(result.bucket).toEqual('texts');
+		expect(result.key).toEqual(key.replace('.pdf', '.txt'));
 		expect(result.location).toEqual(s3Path);
 	});
 });

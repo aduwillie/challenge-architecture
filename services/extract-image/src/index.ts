@@ -14,6 +14,8 @@ export interface IServiceOptions {
     readFile: (filename: string) => Promise<any>;
 };
 
+const BUCKET_NAME = 'images';
+
 const broker: ServiceBroker = new ServiceBroker({
     nodeID: 'extract-image',
     logger: true,
@@ -38,14 +40,15 @@ export const GetService: (options: IServiceOptions) => ServiceSchema = ({ extrac
                 key: 'string',
             },
             handler: async (ctx) => {
-                const { bucket, key, filename } = ctx.params;
+                const { bucket, key } = ctx.params;
                 const localAbsolutePath = await getLocalCopyFromS3(bucket, key);
                 const combinedImagePath = await extractImage('localAbsolutePath', 10);
                 const imageBuffer = await readFile(combinedImagePath);
-                const newKey = `images/${key.replace('.pdf', '.png')}`;
+                const newKey = `${key.replace('.pdf', '.png')}`;
                 const location: string = await uploadToS3(bucket, newKey, imageBuffer);
-                broker.emit('extract.image', { bucket, key, location, pathToClean: [ localAbsolutePath, combinedImagePath ] });
-                return { bucket, key, location };
+                const returnObj = { bucket: BUCKET_NAME, key: newKey, location }
+                broker.emit('extract.image', Object.assign(returnObj, { pathToClean: [ localAbsolutePath, combinedImagePath ] }));
+                return returnObj;
             },
         },
     },

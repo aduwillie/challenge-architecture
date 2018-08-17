@@ -6,8 +6,9 @@ export const getPdfInfo = (pathToPDF: string): Promise<Object> => {
             PDFUtil.info(pathToPDF, (err, info) => {
                 if (err) {
                     reject(new Error(err));
+                } else {
+                    resolve(info)
                 }
-                
             });
         } catch (error) {
             reject(new Error(error));
